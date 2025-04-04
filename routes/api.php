@@ -3,28 +3,18 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AlbumController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group.
-|
-*/
 
-// Public routes
-Route::prefix('auth')->group(function () {
-    Route::post('/signup', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-});
-
-// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    Route::get('/albums', [AlbumController::class, 'index']);
+    Route::get('/albums/my-albums', [AlbumController::class, 'myAlbums']);
+    Route::get('/albums/{id}', [AlbumController::class, 'show']);
+    Route::post('/albums', [AlbumController::class, 'store']);
+    Route::put('/albums/{id}', [AlbumController::class, 'update']);
+    Route::delete('/albums/{id}', [AlbumController::class, 'destroy']);
+    Route::post('/albums/{id}/publish', [AlbumController::class, 'publish']);
+    Route::post('/albums/{id}/unpublish', [AlbumController::class, 'unpublish']);
+    Route::get('/albums/{id}/images', [AlbumController::class, 'getImages']);
+    Route::get('/stats', [AlbumController::class, 'stats']);
 });
