@@ -23,11 +23,6 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']); // Connexion
 });
 
-/* ===========================
-   ALBUMS (PUBLIC & PROTÉGÉES)
-   =========================== */
-
-// Routes accessibles sans authentification
 
 
 // Routes nécessitant une authentification

@@ -102,4 +102,5 @@ class AlbumController extends Controller
             'private' => Album::where('is_public', false)->count(),
         ];
     }
+    
 }
