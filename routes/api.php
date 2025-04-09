@@ -49,3 +49,5 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user(); // Récupérer les infos de l'utilisateur connecté
     });
 });
+
+

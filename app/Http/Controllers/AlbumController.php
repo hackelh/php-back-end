@@ -11,13 +11,16 @@ class AlbumController extends Controller
     // GET /albums
     public function index()
     {
-        return Album::all();
+        
+        $albums = Album::all();
+        return response()->json($albums);
     }
 
     // GET /albums/my-albums
     public function myAlbums()
     {
         return Album::where('user_id', Auth::id())->get();
+        
     }
 
     // GET /albums/{id}
@@ -39,7 +42,7 @@ class AlbumController extends Controller
             'user_id' => Auth::id(),
             'title' => $request->title,
             'description' => $request->description,
-            'is_public' => $request->isPublic,
+            'isPublic' => $request->isPublic,
         ]);
 
         return response()->json($album, 201);
@@ -98,9 +101,10 @@ class AlbumController extends Controller
     {
         return [
             'total' => Album::count(),
-            'public' => Album::where('is_public', true)->count(),
-            'private' => Album::where('is_public', false)->count(),
+            'public' => Album::where('isPublic', true)->count(),
+            'private' => Album::where('isPublic', false)->count(),
         ];
     }
-    
+
 }
+
