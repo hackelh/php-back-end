@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('album_id')->constrained()->onDelete('cascade');
+            $table->string('url');
+            $table->string('title')->nullable();
+            $table->text('description')->nullable();
+            $table->integer('download_count')->default(0);
             $table->timestamps();
         });
     }

@@ -52,7 +52,17 @@ class AlbumController extends Controller
     public function update(Request $request, $id)
     {
         $album = Album::findOrFail($id);
-        $this->authorize('update', $album); // facultatif
+        
+        // Vérifier si l'utilisateur est le propriétaire de l'album
+        if ($album->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Non autorisé à modifier cet album'], 403);
+        }
+
+        $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'isPublic' => 'sometimes|required|boolean',
+        ]);
 
         $album->update($request->only('title', 'description', 'isPublic'));
 
@@ -63,9 +73,22 @@ class AlbumController extends Controller
     public function destroy($id)
     {
         $album = Album::findOrFail($id);
-        $this->authorize('delete', $album); // facultatif
-        $album->delete();
+        
+        // Vérifier si l'utilisateur est le propriétaire de l'album
+        if ($album->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Non autorisé à supprimer cet album'], 403);
+        }
 
+        // Supprimer les images associées à l'album
+        foreach ($album->images as $image) {
+            if ($image->url) {
+                $path = str_replace('/storage/', 'public/', $image->url);
+                Storage::delete($path);
+            }
+            $image->delete();
+        }
+
+        $album->delete();
         return response()->json(null, 204);
     }
 
@@ -92,8 +115,16 @@ class AlbumController extends Controller
     // GET /albums/{id}/images
     public function getImages($id)
     {
-        $album = Album::with('images')->findOrFail($id);
-        return $album->images;
+        $album = Album::findOrFail($id);
+        $images = $album->images;
+
+        // Transformer les URLs pour qu'elles soient accessibles
+        foreach ($images as $image) {
+            $image->filePath = url($image->url);
+            $image->albumId = $image->album_id;
+        }
+
+        return $images;
     }
 
     // POST /albums/{id}/images (upload image)
