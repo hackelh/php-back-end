@@ -1,5 +1,6 @@
 <?php
 
+<<<<<<< HEAD
 namespace App\Http\Controllers;
 
 use App\Models\Image;
@@ -77,5 +78,18 @@ class ImageController extends Controller
         
         $image->delete();
         return response()->json(null, 204);
+=======
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Image extends Model
+{
+    protected $fillable = ['album_id', 'path'];
+
+    public function album()
+    {
+        return $this->belongsTo(Album::class);
+>>>>>>> 59a665c62b853b22c0af4988476e6ea85df1bd0b
     }
 }
