@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AlbumController extends Controller
 {
     // GET /albums
     public function index()
     {
-        
         $albums = Album::all();
         return response()->json($albums);
     }
@@ -20,7 +21,6 @@ class AlbumController extends Controller
     public function myAlbums()
     {
         return Album::where('user_id', Auth::id())->get();
-        
     }
 
     // GET /albums/{id}
@@ -73,7 +73,7 @@ class AlbumController extends Controller
     public function publish($id)
     {
         $album = Album::findOrFail($id);
-        $album->is_public = true;
+        $album->isPublic = true;
         $album->save();
 
         return $album;
@@ -83,7 +83,7 @@ class AlbumController extends Controller
     public function unpublish($id)
     {
         $album = Album::findOrFail($id);
-        $album->is_public = false;
+        $album->isPublic = false;
         $album->save();
 
         return $album;
@@ -92,19 +92,41 @@ class AlbumController extends Controller
     // GET /albums/{id}/images
     public function getImages($id)
     {
-        $album = Album::with('images')->findOrFail($id); // à condition que tu aies un modèle Image
+        $album = Album::with('images')->findOrFail($id);
         return $album->images;
+    }
+
+    // POST /albums/{id}/images (upload image)
+    public function uploadImage(Request $request, $id)
+    {
+        $request->validate([
+            'image' => 'required|image|max:2048', // max 2 Mo
+        ]);
+
+        $album = Album::findOrFail($id);
+
+        if ($album->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Non autorisé'], 403);
+        }
+
+        $path = $request->file('image')->store('images', 'public');
+
+        $image = Image::create([
+            'album_id' => $album->id,
+            'path' => $path,
+        ]);
+
+        return response()->json($image, 201);
     }
 
     // GET /stats
     public function stats()
     {
         return [
-            'total' => Album::count(),
-            'public' => Album::where('isPublic', true)->count(),
-            'private' => Album::where('isPublic', false)->count(),
+            'total_albums' => Album::count(),
+            'albums_public' => Album::where('isPublic', true)->count(),
+            'albums_private' => Album::where('isPublic', false)->count(),
+            'total_images' => Image::count(), // décommenté pour les stats
         ];
     }
-
 }
-

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\StatsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,8 +26,9 @@ Route::prefix('auth')->group(function () {
 
 
 
-// Routes nécessitant une authentification
+// Routes des albums (protégées)
 Route::middleware('auth:sanctum')->group(function () {
+    // Routes des albums
     Route::get('/albums', [AlbumController::class, 'index']);
     Route::get('/albums/my-albums', [AlbumController::class, 'myAlbums']);
     Route::get('/albums/{id}', [AlbumController::class, 'show']);
@@ -36,18 +38,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/albums/{id}/publish', [AlbumController::class, 'publish']);
     Route::post('/albums/{id}/unpublish', [AlbumController::class, 'unpublish']);
     Route::get('/albums/{id}/images', [AlbumController::class, 'getImages']);
-    Route::get('/stats', [AlbumController::class, 'stats']);
-});
+
+    Route::post('/albums/{id}/images', [AlbumController::class, 'uploadImage']);
 
 
-/* ===========================
-   AUTHENTIFICATION (PROTÉGÉE)
-   =========================== */
-Route::middleware('auth:sanctum')->group(function () {
+    // Routes d'authentification et autres
     Route::post('/logout', [AuthController::class, 'logout']); // Déconnexion
     Route::get('/user', function (Request $request) {
         return $request->user(); // Récupérer les infos de l'utilisateur connecté
     });
+
+    // Route des statistiques
+    Route::get('/stats', [AlbumController::class, 'stats']);
 });
 
 

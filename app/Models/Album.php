@@ -15,4 +15,11 @@ public function user() {
 public function images() {
     return $this->hasMany(Image::class); // À créer plus tard pour les images
 }
+
+    protected $appends = ['isPublic'];
+
+    public function getIsPublicAttribute()
+    {
+        return $this->attributes['isPublic'];
+    }
 }
