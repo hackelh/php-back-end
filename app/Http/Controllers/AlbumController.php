@@ -148,8 +148,8 @@ class AlbumController extends Controller
         return [
             'total_albums' => Album::count(),
             'albums_public' => Album::where('isPublic', true)->count(),
-            'albums_private' => Album::where('isPublic', false)->count(),
-            'total_images' => Image::count(), // décommenté pour les stats
+            'albums_private' => Album::where('isPublic', true)->count(),
+            'total_images' => Image::count(),
         ];
     }
 }
