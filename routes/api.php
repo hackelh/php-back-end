@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\StatsController;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,20 +20,41 @@ use App\Http\Controllers\StatsController;
 */
 
 /* ===========================
-   AUTHENTIFICATION (PUBLIC)
+   ROUTES PUBLIQUES
    =========================== */
+// Auth
 Route::prefix('auth')->group(function () {
-    Route::post('/signup', [AuthController::class, 'register']); // Inscription
-    Route::post('/login', [AuthController::class, 'login']); // Connexion
+    Route::post('/signup', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
 });
 
+// Albums publics
+Route::get('/albums', [AlbumController::class, 'index']);
+Route::get('/stats', [StatsController::class, 'getStats']);
 
+// Images publiques
+Route::get('/storage/images/{filename}', function ($filename) {
+    $path = storage_path('app/public/images/' . $filename);
+    
+    if (!file_exists($path)) {
+        \Log::error('Image not found: ' . $path);
+        return response()->json(['error' => 'Image not found'], 404);
+    }
+    
+    try {
+        return response()->file($path, [
+            'Cache-Control' => 'public, max-age=31536000',
+            'Access-Control-Allow-Origin' => '*',
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Error serving image: ' . $e->getMessage());
+        return response()->json(['error' => 'Error serving image'], 500);
+    }
+});
 
-// Routes publiques
-Route::get('/albums', [AlbumController::class, 'index']); // Liste des albums publics
-Route::get('/stats', [StatsController::class, 'getStats']); // Statistiques globales
-
-// Routes protégées
+/* ===========================
+   ROUTES PROTÉGÉES
+   =========================== */
 Route::middleware('auth:sanctum')->group(function () {
     // Routes des albums
     Route::get('/albums/my-albums', [AlbumController::class, 'myAlbums']);
@@ -44,9 +67,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/albums/{id}/images', [AlbumController::class, 'getImages']);
 
     // Routes des images
-    Route::post('/images', [ImageController::class, 'store']);
+    Route::get('/images', [ImageController::class, 'getAll']);
+    Route::get('/images/{id}', [ImageController::class, 'get']);
+    Route::post('/images', [ImageController::class, 'create']);
     Route::put('/images/{id}', [ImageController::class, 'update']);
-    Route::delete('/images/{id}', [ImageController::class, 'destroy']);
+    Route::delete('/images/{id}', [ImageController::class, 'delete']);
 
     // Routes d'authentification et autres
     Route::post('/logout', [AuthController::class, 'logout']); // Déconnexion

@@ -13,6 +13,7 @@ class Image extends Model
         'album_id',
         'url',
         'title',
+        'description',
     ];
 
     // Relation avec l'album

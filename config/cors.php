@@ -1,11 +1,12 @@
 <?php
 return [
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['http://localhost:3000'], // Assurez-vous que Next.js est bien à ce port
+    'allowed_origins' => ['http://localhost:3000'],
     'allowed_headers' => ['*'],
-    'exposed_headers' => [],
+    'exposed_headers' => ['*'],
     'max_age' => 0,
-    'supports_credentials' => true,  // Permet l'envoi de cookies
+    'supports_credentials' => true,
+    'paths_public' => ['api/storage/*'],  // Routes publiques qui ne nécessitent pas d'authentification
 ];
 
