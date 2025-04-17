@@ -82,7 +82,7 @@ class AlbumController extends Controller
         // Supprimer les images associées à l'album
         foreach ($album->images as $image) {
             if ($image->url) {
-                $path = str_replace('/storage/', 'public/', $image->url);
+                $path = str_replace('storage/', 'public/', $image->url);
                 Storage::delete($path);
             }
             $image->delete();
@@ -116,15 +116,7 @@ class AlbumController extends Controller
     public function getImages($id)
     {
         $album = Album::findOrFail($id);
-        $images = $album->images;
-
-        // Transformer les URLs pour qu'elles soient accessibles
-        foreach ($images as $image) {
-            $image->filePath = url($image->url);
-            $image->albumId = $image->album_id;
-        }
-
-        return $images;
+        return $album->images;
     }
 
     // POST /albums/{id}/images (upload image)

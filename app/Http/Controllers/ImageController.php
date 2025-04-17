@@ -1,95 +1,77 @@
 <?php
 
-<<<<<<< HEAD
 namespace App\Http\Controllers;
 
 use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ImageController extends Controller
 {
-    public function index()
+    // Récupérer les images d'un album
+    public function index($albumId)
     {
-        return Image::all();
+        $images = Image::where('album_id', $albumId)->get();
+
+        return response()->json($images);
     }
 
-    public function show($id)
+    // Récupérer une image spécifique
+    public function show($imageId)
     {
-        return Image::findOrFail($id);
+        $image = Image::find($imageId);
+
+        if (!$image) {
+            return response()->json(['message' => 'Image non trouvée'], 404);
+        }
+
+        return response()->json($image);
     }
 
+    // Ajouter une nouvelle image
     public function store(Request $request)
     {
-        $request->validate([
-            'image' => 'required|image|max:10240',
+        $validator = Validator::make($request->all(), [
             'album_id' => 'required|exists:albums,id',
+            'image' => 'required|image|max:2048',
+            'title' => 'nullable|string|max:255',
         ]);
 
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            
-            // Stockage du fichier
-            $path = $file->storeAs('public/images', $filename);
-            
-            // Création de l'enregistrement dans la base de données
-            $image = new Image([
-                'album_id' => $request->album_id,
-                'url' => '/storage/images/' . $filename,
-                'title' => $request->title ?? $file->getClientOriginalName(),
-                'description' => $request->description ?? '',
-                'download_count' => 0
-            ]);
-
-            $image->save();
-
-            // Forcer le chargement des accesseurs
-            $image->refresh();
-
-            return response()->json($image, 201);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        return response()->json(['error' => 'Aucun fichier n\'a été envoyé.'], 400);
-    }
+        $imageFile = $request->file('image');
+        $imagePath = $imageFile->store('images', 'public');
 
-    public function update(Request $request, $id)
-    {
-        $image = Image::findOrFail($id);
-        
-        $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|nullable|string',
+        $image = Image::create([
+            'album_id' => $request->album_id,
+            'url' => Storage::url($imagePath),
+            'title' => $request->title,
         ]);
 
-        $image->update($request->only(['title', 'description']));
-        return $image;
+        return response()->json([
+            'message' => 'Image téléchargée avec succès',
+            'image' => $image,
+        ], 201);
     }
 
-    public function destroy($id)
+    // Supprimer une image
+    public function destroy($imageId)
     {
-        $image = Image::findOrFail($id);
-        
-        // Suppression du fichier physique
-        if ($image->url) {
-            $path = str_replace('/storage/', 'public/', $image->url);
-            Storage::delete($path);
+        $image = Image::find($imageId);
+
+        if (!$image) {
+            return response()->json(['message' => 'Image non trouvée'], 404);
         }
-        
+
+        // Supprimer l'image du stockage
+        Storage::delete(str_replace('/storage', 'public', $image->url));
+
+        // Supprimer l'image de la base de données
         $image->delete();
-        return response()->json(null, 204);
-=======
-namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Image extends Model
-{
-    protected $fillable = ['album_id', 'path'];
-
-    public function album()
-    {
-        return $this->belongsTo(Album::class);
->>>>>>> 59a665c62b853b22c0af4988476e6ea85df1bd0b
+        return response()->json(['message' => 'Image supprimée avec succès']);
     }
 }

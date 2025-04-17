@@ -53,6 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user(); // Récupérer les infos de l'utilisateur connecté
     });
+    Route::get('/albums/{albumId}/images', [ImageController::class, 'index']);
+Route::get('/images/{imageId}', [ImageController::class, 'show']);
 
     // Route des statistiques
     Route::get('/stats', [AlbumController::class, 'stats']);
