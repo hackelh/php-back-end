@@ -81,8 +81,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/albums/{albumId}/images', [ImageController::class, 'index']);
 Route::get('/images/{imageId}', [ImageController::class, 'show']);
 
-    // Route des statistiques
-    Route::get('/stats', [AlbumController::class, 'stats']);
+    // Route des statistiques (utilise le même contrôleur que la route publique)
+    Route::get('/stats', [StatsController::class, 'getStats']);
 });
 
 

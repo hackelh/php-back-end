@@ -35,7 +35,7 @@ class ImageController extends Controller
             'image' => 'required|file|image|max:2048',
             'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'album_id' => 'nullable|exists:albums,id'
+            'album_id' => 'required|exists:albums,id'
         ]);
 
         if ($validator->fails()) {

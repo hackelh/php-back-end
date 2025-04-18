@@ -13,7 +13,21 @@ class AlbumController extends Controller
     // GET /albums
     public function index()
     {
-        $albums = Album::all();
+        $albums = Album::where('isPublic', true)
+            ->with(['images' => function($query) {
+                $query->select('id', 'album_id', 'url', 'title', 'description');
+            }])
+            ->withCount('images')
+            ->get()
+            ->map(function($album) {
+                // Ajouter les deux formats de compteur d'images
+                $imageCount = $album->images->count();
+                $album->imageCount = $imageCount;
+                $album->nbre_images = $imageCount;
+                $album->image_count = $imageCount;
+                return $album;
+            });
+
         return response()->json($albums);
     }
 
@@ -142,14 +156,5 @@ class AlbumController extends Controller
         return response()->json($image, 201);
     }
 
-    // GET /stats
-    public function stats()
-    {
-        return [
-            'total_albums' => Album::count(),
-            'albums_public' => Album::where('isPublic', true)->count(),
-            'albums_private' => Album::where('isPublic', true)->count(),
-            'total_images' => Image::count(),
-        ];
-    }
+
 }
